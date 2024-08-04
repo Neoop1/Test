@@ -472,7 +472,7 @@ services:
         environment:
            PUBLIC_SERVER_URL: twitter.local:3000
         ports:
-          - "80:80"
+          - "8080:80"
         networks:
             - spring
         depends_on:
