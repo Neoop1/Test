@@ -1,0 +1,557 @@
+services:
+    postgres:
+        container_name: postgres
+        image: postgres
+        hostname: postgres
+        command: -c 'max_connections=200'
+        environment:
+            POSTGRES_MULTIPLE_DATABASES: tweet,chat,lists,notification,tag,topic
+            POSTGRES_DB: user
+            POSTGRES_USER: postgres
+            PGUSER: postgres
+            POSTGRES_PASSWORD: root
+            PGDATA: /data/postgres
+        volumes:
+            - postgres_prod:/data/postgres
+            - ./postgres:/docker-entrypoint-initdb.d #POSTGRES_MULTIPLE_DATABASE script 
+        ports:
+            - "5432:5432"
+        networks:
+            - postgres
+        restart: unless-stopped
+        healthcheck:
+           test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
+           interval: 30s
+           timeout: 60s
+           retries: 5
+           start_period: 60s 
+
+    minio:
+        container_name: minio
+        image: quay.io/minio/minio
+        hostname: minio
+        command: server /data --console-address ":9001" 
+        environment:
+            MINIO_ROOT_USER: minio-user
+            MINIO_ROOT_PASSWORD: minio-password
+        volumes:
+            - minio_data:/data
+        healthcheck:
+           test: ["CMD", "mc", "ready", "local"]
+           interval: 5s
+           timeout: 5s
+           retries: 5   
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        networks:
+            - spring
+        restart: unless-stopped
+    createbuckets:
+        image: minio/mc
+        depends_on:
+          - minio
+        entrypoint: >
+           /bin/sh -c "
+           /usr/bin/mc alias set twitterminio http://minio:9000 minio-user minio-password;
+           /usr/bin/mc mb twitterminio/twitterclonestorage;
+           /usr/bin/mc anonymous set public twitterminio/twitterclonestorage;
+           exit 0;
+           "
+        networks:
+            - spring
+
+    pgadmin:
+        container_name: pgadmin
+        image: dpage/pgadmin4
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+            PGADMIN_CONFIG_SERVER_MODE: 'False'
+        volumes:
+            - pgadmin:/var/lib/pgadmin
+        ports:
+            - "5050:80"
+        networks:
+            - postgres
+        restart: unless-stopped
+
+    zipkin:
+        image: openzipkin/zipkin
+        hostname: zipkin
+        container_name: zipkin
+        ports:
+            - "9411:9411"
+        networks:
+            - spring
+
+    rabbitmq:
+        image: rabbitmq:3.9.11-management-alpine
+        container_name: rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        networks:
+            - spring
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:7.0.1
+        container_name: zookeeper
+        ports:
+            - "2181:2181"
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+        networks:
+            - spring
+
+
+    broker:
+        image: confluentinc/cp-kafka:7.0.1
+        container_name: broker
+        hostname: broker
+        ports:
+            - "9092:9092"
+        depends_on:
+            - zookeeper
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+        networks:
+            - spring
+        #healthcheck:
+        #   test: /kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka:9092 || exit 1
+        #   start_period: 20s
+        #   interval: 1s
+        #   timeout: 60s
+        #   retries: 60
+
+    grafana:
+        container_name: grafana
+        build: 'dashboard/grafana'
+        ports:
+            - "3001:3000"
+        volumes:
+            - ./grafana:/var/lib/grafana
+        depends_on:
+            - zookeeper
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+        networks:
+            monitoring:
+                aliases:
+                    - grafana
+
+    prometheus:
+        image: prom/prometheus
+        container_name: prometheus
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./dashboard/prometheus.yml:/etc/prometheus/prometheus.yml
+            - ./prometheus:/prometheus
+        networks:
+            monitoring:
+                aliases:
+                    - prometheus
+
+    eureka-server:
+        build:
+          context: eureka-server
+        container_name: eureka-server
+        hostname: eureka-server
+        environment:
+            EUREKA_HOST: eureka-server
+            ZIPKIN_HOST: zipkin
+        ports:
+            - "8761:8761"
+        networks:
+            - spring
+        depends_on:
+            - zipkin
+        healthcheck:
+          test: "curl --fail --silent localhost:8761/actuator/health | grep UP || exit 1"
+          interval: 20s
+          timeout: 5s
+          retries: 5
+          start_period: 40s
+        restart: unless-stopped
+
+    config-server:
+        build:
+          context: config-server
+        container_name: config-server
+        hostname: config-server
+        environment:
+            EUREKA_HOST: eureka-server
+            ZIPKIN_HOST: zipkin
+        #    MINIO-Access-Key: 
+        #    MINIO-Secret-Key: 
+        #    MINIO-EndPoint: 
+        ports: 
+            - "8888:8888"
+        networks:
+            - spring
+        depends_on:
+            - zipkin
+            - eureka-server
+        healthcheck:
+            test: curl --fail http://config-server:8888/api-gateway/cloud/config/ || exit 1
+            interval: 60s
+            retries: 5
+            start_period: 20s
+            timeout: 10s   
+
+    api-gateway:
+        build:
+          context: api-gateway
+        container_name: api-gateway
+        hostname: api-gateway
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            ZIPKIN_HOST: zipkin
+        ports:
+            - ":8000:8000"
+        networks:
+            - spring
+        depends_on:
+            - zipkin
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8000/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    user-service:
+        build:
+          context: user-service
+        container_name: user-service
+        hostname: user-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8001:8001"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - broker
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8001/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 140s
+        restart: unless-stopped
+
+    tweet-service:
+        build:
+          context: tweet-service
+        container_name: tweet-service
+        hostname: tweet-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8002:8002"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8002/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    topic-service:
+        build:
+          context: topic-service
+        container_name: topic-service
+        hostname: topic-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8003:8003"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - broker
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8003/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+        
+
+    tag-service:
+        build:
+          context: tag-service
+        container_name: tag-service
+        hostname: tag-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8004:8004"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8004/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    lists-service:
+        build:
+          context: lists-service
+        container_name: lists-service
+        hostname: lists-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8005:8005"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8005/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    chat-service:
+        build:
+          context: chat-service
+        container_name: chat-service
+        hostname: chat-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8006:8006"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8006/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    notification-service:
+        build:
+          context: notification-service
+        container_name: notification-service
+        hostname: notification-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            DATASOURCE_HOST: postgres
+            ZIPKIN_HOST: zipkin
+            RABBITMQ_HOST: rabbitmq
+        ports:
+            - "8007:8007"
+        networks:
+            - postgres
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8007/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    email-service:
+        build:
+          context: email-service
+        container_name: email-service
+        hostname: email-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            ZIPKIN_HOST: zipkin
+        ports:
+            - "8020:8020"
+        networks:
+            - spring
+        depends_on:
+            - zipkin
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8020/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    image-service:
+        build:
+          context: image-service
+        container_name: image-service
+        hostname: image-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            ZIPKIN_HOST: zipkin
+        ports:
+            - "8021:8021"
+        networks:
+            - spring
+        depends_on:
+            - zipkin
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8021/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped
+
+    websocket-service:
+        build:
+          context: websocket-service
+        container_name: websocket-service
+        hostname: websocket-service
+        environment:
+            EUREKA_HOST: eureka-server
+            CONFIG_SERVER_HOST: config-server
+            ZIPKIN_HOST: zipkin
+        ports:
+            - "8022:8022"
+        networks:
+            - spring
+        depends_on:
+            - zipkin
+            - eureka-server
+            - config-server
+        healthcheck:
+           test: "curl --fail --silent localhost:8022/actuator/health | grep UP || exit 1"
+           interval: 20s
+           timeout: 5s
+           retries: 5
+           start_period: 40s
+        restart: unless-stopped        
+            
+
+    frontend:   
+        build:
+          context: ./frontend
+          dockerfile: Dockerfile
+        container_name: frontend
+        hostname: frontend
+        environment:
+           PUBLIC_SERVER_URL: twitter.local:3000
+        ports:
+          - "80:80"
+        networks:
+            - spring
+        depends_on:
+            - postgres
+            - zipkin
+            - rabbitmq
+            - broker
+            - eureka-server
+            - config-server
+            - websocket-service
+    
+networks:
+    postgres:
+        driver: bridge
+    spring:
+        driver: bridge
+    monitoring:
+
+volumes:
+    postgres_prod:
+    pgadmin:
+    minio_data:
+    
