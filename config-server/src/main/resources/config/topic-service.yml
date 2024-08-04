@@ -4,7 +4,7 @@ spring:
     application:
         name: topic-service
     datasource:
-        url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:5432/topic
+        url: jdbc:postgresql://${DATASOURCE_HOST:postgresql}:5432/topic
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
@@ -20,7 +20,7 @@ spring:
     zipkin:
         base-url: http://${ZIPKIN_HOST:localhost}:9411
     kafka:
-        bootstrap-servers: localhost:9092
+        bootstrap-servers: broker:9092
         consumer:
             group-id: topic
 feign:

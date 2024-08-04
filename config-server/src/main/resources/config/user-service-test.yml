@@ -4,7 +4,7 @@ spring:
     application:
         name: user-service
     datasource: 
-        url: jdbc:postgresql://localhost:5432/user-test
+        url: jdbc:postgresql://postgresql:5432/user-test
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
@@ -19,13 +19,13 @@ spring:
             mode: always
             data-locations: classpath:sql-test/clear-user-db.sql, classpath:sql-test/populate-user-db.sql
     kafka:
-        bootstrap-servers: localhost:9092
+        bootstrap-servers: broker:9092
         consumer:
             group-id: user-test
 eureka:
     client:
         service-url:
-            defaultZone: http://localhost}:8761/eureka
+            defaultZone: http://localhost:8761/eureka
         fetch-registry: true
         register-with-eureka: true
     instance:
