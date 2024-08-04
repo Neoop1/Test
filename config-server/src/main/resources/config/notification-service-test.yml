@@ -4,7 +4,7 @@ spring:
     application:
         name: notification-service
     datasource:
-        url: jdbc:postgresql://localhost:5432/notification-test
+        url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:5432/notification-test
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
@@ -30,3 +30,5 @@ eureka:
         register-with-eureka: true
     instance:
         hostname: localhost
+        #preferIpAddress : true
+

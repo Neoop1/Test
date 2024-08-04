@@ -97,13 +97,20 @@ spring:
                         - Path=/api/v1/email/suggested
 
     zipkin:
-        base-url: http://${ZIPKIN_HOST:localhost}:9411
+        base-url: http://${ZIPKIN_HOST:zipkin}:9411
 
 eureka:
     client:
-        service-url:
-            defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+        service-url: 
+            defaultZone: http://${EUREKA_HOST:eureka-server}:8761/eureka
         fetch-registry: true
         register-with-eureka: true
     instance:
         hostname: ${EUREKA_HOST:localhost}
+        preferIpAddress : true
+        
+management:
+    endpoints:
+        web:
+          exposure:
+                include: 'health'

@@ -3,14 +3,15 @@ server:
 spring:
     application:
         name: tweet-service
-    datasource:
+    datasource: 
         url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:5432/tweet
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
     jpa:
         hibernate:
-            ddl-auto: validate
+            ddl-auto: update
+            generate-ddl: true  
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -48,6 +49,7 @@ eureka:
         register-with-eureka: true
     instance:
         hostname: ${EUREKA_HOST:localhost}
+        preferIpAddress : true
 
 management:
     endpoints:

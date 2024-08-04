@@ -3,14 +3,15 @@ server:
 spring:
     application:
         name: chat-service
-    datasource:
+    datasource: 
         url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:5432/chat
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
     jpa:
         hibernate:
-            ddl-auto: validate
+            ddl-auto: update
+            generate-ddl: true  
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -19,7 +20,7 @@ spring:
     zipkin:
         base-url: http://${ZIPKIN_HOST:localhost}:9411
     kafka:
-        bootstrap-servers: localhost:9092
+        bootstrap-servers: broker:9092
         consumer:
             group-id: chat
 resilience4j:
@@ -41,6 +42,7 @@ eureka:
         register-with-eureka: true
     instance:
         hostname: ${EUREKA_HOST:localhost}
+        preferIpAddress : true
 
 management:
     endpoints:

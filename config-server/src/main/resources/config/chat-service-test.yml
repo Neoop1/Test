@@ -4,7 +4,7 @@ spring:
     application:
         name: chat-service
     datasource:
-        url: jdbc:postgresql://localhost:5432/chat-test
+        url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:5432/chat-test
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
@@ -21,8 +21,9 @@ spring:
 eureka:
     client:
         service-url:
-            defaultZone: http://localhost:8761/eureka
+            defaultZone: http://${EUREKA_HOST:eureka-server}:8761/eureka
         fetch-registry: true
         register-with-eureka: true
     instance:
-        hostname: localhost
+        hostname: ${EUREKA_HOST:localhost}
+        preferIpAddress : true
