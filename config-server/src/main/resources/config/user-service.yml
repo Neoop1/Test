@@ -41,7 +41,7 @@ eureka:
         register-with-eureka: true
     instance:
         hostname: ${EUREKA_HOST:localhost}
-        preferIpAddress : true
+        #preferIpAddress : true
 
 
 management:
