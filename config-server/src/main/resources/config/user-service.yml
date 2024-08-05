@@ -4,7 +4,7 @@ spring:
     application:
         name: user-service
     datasource:
-        url: jdbc:postgresql://${DATASOURCE_HOST:postgresql}:5432/user
+        url: jdbc:postgresql://${DATASOURCE_HOST:postgres}:5432/user
         username: postgres
         password: root
         driverClassName: org.postgresql.Driver
@@ -18,7 +18,7 @@ spring:
     flyway:
         locations: classpath:db/migration
     zipkin:
-        base-url: http://${ZIPKIN_HOST:localhost}:9411
+        base-url: http://${ZIPKIN_HOST:zipkin}:9411
     kafka:
         bootstrap-servers: broker:9092
         consumer:
@@ -36,12 +36,12 @@ feign:
 eureka:
     client:
         service-url:
-            defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
+            defaultZone: http://${EUREKA_HOST:eureka-server}:8761/eureka
         fetch-registry: true
         register-with-eureka: true
     instance:
         hostname: ${EUREKA_HOST:localhost}
-        #preferIpAddress : true
+        preferIpAddress : true
 
 
 management:
