@@ -9,12 +9,15 @@ spring:
 eureka:
     client:
         service-url:
-            defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka
-        fetch-registry: true
-        register-with-eureka: true
+            defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}
+        fetchRegistry: ${FETCH_REGISTRY:false}
+        registerWithEureka: ${REGISTER_WITH_EUREKA:true}
     instance:
-        hostname: ${EUREKA_HOST:localhost}
-        preferIpAddress : true
+        hostname: ${HOST_NAME:${spring.application.name}}  # work on swarm
+        instance-id: ${spring.application.name}:${random.uuid}
+        leaseRenewalIntervalInSeconds: ${LEASE_RENEWAL_INTERVAl_IN_SECONDS:10}
+        leaseExpirationDurationInSeconds: ${LEASE_EXPIRATION_DURATIONIN_SECONDS:20}
+        preferIpAddress: ${PREFER_IP_ADDRESS:false}
 
 
 management:
