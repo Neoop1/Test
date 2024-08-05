@@ -136,7 +136,7 @@ public class TweetServiceImpl implements TweetService {
     @Transactional(readOnly = true)
     public TweetImage uploadTweetImage(MultipartFile file) {
         //String imageSrc = imageClient.uploadImage(file);
-        String imageSrc = imageClient.BufferedInputStream(file.getInputStream());
+        String imageSrc = imageClient.BufferedInputStream(file.InputStreamReader());
         return tweetImageRepository.save(new TweetImage(imageSrc));
     }
 
