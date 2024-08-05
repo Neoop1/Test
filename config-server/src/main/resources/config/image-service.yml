@@ -11,9 +11,15 @@ amazon:
     s3:
         bucket:
             name: twitterclonestorage
+    #aws:
+    #    access-key: AKIATP4TDBGPAJUNI5EY
+    #    secret-key: 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
     aws:
-        access-key: AKIATP4TDBGPAJUNI5EY
-        secret-key: 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
+        accessKey: "minio-user"
+        secretKey: "minio-password"
+        region.static: us-east-1
+        service-endpoint: http://minio:9000 ##minio server docker
+        ##service-endpoint: http://minio.twitter-website.svc.cluster.local:9000 ##minio server kube 
 
 eureka:
     client:

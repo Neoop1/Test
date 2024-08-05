@@ -31,13 +31,6 @@ import java.util.Optional;
 
 import static com.gmail.merikbest2015.constants.ErrorMessage.TWEET_NOT_FOUND;
 
-
-import java.io.File;
- import java.io.BufferedReader;
- import java.io.InputStreamReader;
- import java.io.*;
- import java.io.InputStream;
-
 @Service
 @RequiredArgsConstructor
 public class TweetServiceImpl implements TweetService {
@@ -142,8 +135,7 @@ public class TweetServiceImpl implements TweetService {
     @Override
     @Transactional(readOnly = true)
     public TweetImage uploadTweetImage(MultipartFile file) {
-        //String imageSrc = imageClient.uploadImage(file);
-        String imageSrc = imageClient.BufferedInputStream(file.getInputStream());
+        String imageSrc = imageClient.uploadImage(file);
         return tweetImageRepository.save(new TweetImage(imageSrc));
     }
 
