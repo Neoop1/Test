@@ -464,6 +464,7 @@ services:
             
 
     frontend:   
+        image: neoop1/twitter-frontend:v0.1t
         build:
           context: ./frontend
           dockerfile: Dockerfile

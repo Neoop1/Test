@@ -10,7 +10,7 @@ RUN npm config set fetch-retry-maxtimeout 120000
 RUN npm install   && npm rebuild bcrypt --build-from-source && npm cache clean --force 
 #RUN npm install --production && npm rebuild bcrypt --build-from-source && npm cache clean --force 
 COPY . .
-
+RUN npm install --save-dev ajv@^7 
 RUN npm run build
 
 
