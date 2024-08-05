@@ -1,3 +1,12 @@
+No serializer found for class java.io.FileDescriptor and no properties discovered to create BeanSerializer
+
+to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS
+
+@JsonIgnoreProperties(value= {"handler","hibernateLazyInitializer","FieldHandler"})
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+ 
 # Twitter clone
 
 Twitter clone developed with a microservice approach using the Spring Framework and React.js. </br>

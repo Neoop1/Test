@@ -23,6 +23,11 @@ spring:
         bootstrap-servers: broker:9092
         consumer:
             group-id: tweet
+
+    jackson:
+        serialization:
+            FAIL_ON_EMPTY_BEANS: false
+            
 resilience4j:
     circuitbreaker:
         instances:
