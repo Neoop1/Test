@@ -192,6 +192,8 @@ services:
             EUREKA_HOST: eureka-server
             ZIPKIN_HOST: zipkin
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         #    MINIO-Access-Key: 
         #    MINIO-Secret-Key: 
         #    MINIO-EndPoint: 
@@ -214,6 +216,8 @@ services:
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - ":8000:8000"
         networks:
@@ -236,6 +240,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8001:8001"
         networks:
@@ -262,6 +268,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8002:8002"
         networks:
@@ -293,6 +301,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8003:8003"
         networks:
@@ -326,6 +336,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8004:8004"
         networks:
@@ -351,6 +363,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8005:8005"
         networks:
@@ -376,6 +390,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8006:8006"
         networks:
@@ -401,6 +417,8 @@ services:
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8007:8007"
         networks:
@@ -424,6 +442,8 @@ services:
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8020:8020"
         networks:
@@ -444,6 +464,8 @@ services:
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8021:8021"
         networks:
@@ -464,6 +486,8 @@ services:
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
             EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
+            REGISTER_WITH_EUREKA: true
+            FETCH_REGISTRY: true
         ports:
             - "8022:8022"
         networks:
