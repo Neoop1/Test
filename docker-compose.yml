@@ -191,6 +191,7 @@ services:
         environment:
             EUREKA_HOST: eureka-server
             ZIPKIN_HOST: zipkin
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         #    MINIO-Access-Key: 
         #    MINIO-Secret-Key: 
         #    MINIO-EndPoint: 
@@ -212,6 +213,7 @@ services:
             EUREKA_HOST: eureka-server
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - ":8000:8000"
         networks:
@@ -233,6 +235,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8001:8001"
         networks:
@@ -258,6 +261,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8002:8002"
         networks:
@@ -288,6 +292,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8003:8003"
         networks:
@@ -320,6 +325,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8004:8004"
         networks:
@@ -344,6 +350,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8005:8005"
         networks:
@@ -368,6 +375,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8006:8006"
         networks:
@@ -392,6 +400,7 @@ services:
             DATASOURCE_HOST: postgres
             ZIPKIN_HOST: zipkin
             RABBITMQ_HOST: rabbitmq
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8007:8007"
         networks:
@@ -414,6 +423,7 @@ services:
             EUREKA_HOST: eureka-server
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8020:8020"
         networks:
@@ -433,6 +443,7 @@ services:
             EUREKA_HOST: eureka-server
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8021:8021"
         networks:
@@ -452,6 +463,7 @@ services:
             EUREKA_HOST: eureka-server
             CONFIG_SERVER_HOST: config-server
             ZIPKIN_HOST: zipkin
+            EUREKA_DEFAULT_ZONE: "http://eureka-server:8761/eureka"
         ports:
             - "8022:8022"
         networks:
