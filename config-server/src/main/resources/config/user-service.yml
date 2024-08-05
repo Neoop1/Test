@@ -3,14 +3,6 @@ server:
 spring:
     application:
         name: user-service
-    cloud:
-      inetutils:
-        ignored-interfaces:
-          - eth0
-          - eth1
-          - eth2
-          - eth3
-          - lo
 
     datasource:
         url: jdbc:postgresql://${DATASOURCE_HOST:postgres}:5432/user
@@ -49,8 +41,11 @@ eureka:
         fetch-registry: true
         register-with-eureka: true
     instance:
-        hostname: ${EUREKA_HOST:localhost}
-        preferIpAddress : true
+        hostname: ${HOST_NAME:${spring.application.name}}  # work on swarm
+        instance-id: ${spring.application.name}:${random.uuid}
+        leaseRenewalIntervalInSeconds: ${LEASE_RENEWAL_INTERVAl_IN_SECONDS:10}
+        leaseExpirationDurationInSeconds: ${LEASE_EXPIRATION_DURATIONIN_SECONDS:20}
+        #preferIpAddress : true
 
 
 management:
@@ -68,3 +63,7 @@ management:
 
 
 
+
+    
+   
+    
